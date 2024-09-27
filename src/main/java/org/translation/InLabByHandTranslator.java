@@ -3,11 +3,14 @@ package org.translation;
 import java.util.ArrayList;
 import java.util.List;
 
+// Extra Task: if your group has extra time, you can add support for another country code in this class.
+
 /**
  * An implementation of the Translator interface which translates
  * the country code "can" to several languages.
  */
 public class InLabByHandTranslator implements Translator {
+    public static final String CANADA = "can";
     /**
      * Returns the language abbreviations for all languages whose translations are
      * available for the given country.
@@ -15,14 +18,13 @@ public class InLabByHandTranslator implements Translator {
      * @param country the country
      * @return list of language abbreviations which are available for this country
      */
-    public static final String CANADA = "can";
     @Override
     public List<String> getCountryLanguages(String country) {
         if (CANADA.equals(country)) {
-            return new ArrayList<>(List.of("de", "en", "zh", "es", "fr")); // Added "es" and "fr"
+            return new ArrayList<>(List.of("de", "en", "zh"));
         }
         return new ArrayList<>();
-        }
+    }
 
     /**
      * Returns the country abbreviations for all countries whose translations are
@@ -32,7 +34,7 @@ public class InLabByHandTranslator implements Translator {
      */
     @Override
     public List<String> getCountries() {
-        return new ArrayList<>(List.of("can"));
+        return new ArrayList<>(List.of(CANADA));
     }
 
     /**
@@ -46,18 +48,20 @@ public class InLabByHandTranslator implements Translator {
     public String translate(String country, String language) {
         if (!CANADA.equals(country)) {
             return null;
-        }else if (language.equals("de")) {
-            return "Kanada";
-        }else if (language.equals("en")) {
-            return "Canada";
-        }else if ("zh".equals(language)) {
-            return "加拿大";
-        }else if ("es".equals(language)) {
-            return "Canadá";
-        } else if ("fr".equals(language)) {
-            return "Canada";
-        }else {
-            return null;
+        }
+        switch (language) {
+            case "de":
+                return "Kanada";
+            case "en":
+                return "Canada";
+            case "zh":
+                return "加拿大";
+            case "es": // Added Spanish translation
+                return "Canadá";
+            case "it": // Added Italian translation
+                return "Canada";
+            default:
+                return null;
         }
     }
 }

@@ -7,15 +7,15 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * This class provides the service of converting language codes to their names.
  */
 public class LanguageCodeConverter {
 
-    private final Map<String, String> languageCodeToNameMap;
-    private final Map<String, String> languageNameToCodeMap;
+    private final Map<String, String> codeToNameMap = new HashMap<>();
+    private final Map<String, String> nameToCodeMap = new HashMap<>();
+
     /**
      * Default constructor which will load the language codes from "language-codes.txt"
      * in the resources folder.
@@ -30,22 +30,25 @@ public class LanguageCodeConverter {
      * @throws RuntimeException if the resource file can't be loaded properly
      */
     public LanguageCodeConverter(String filename) {
-        languageCodeToNameMap = new HashMap<>();
-        languageNameToCodeMap = new HashMap<>();
-        try {
-            List<String> lines = Files.readAllLines(Paths.get(Objects.requireNonNull(getClass()
-                    .getClassLoader().getResource(filename)).toURI()));
 
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(getClass()
+                    .getClassLoader().getResource(filename).toURI()));
+
+            boolean isFirstLine = true;
             for (String line : lines) {
-                String[] parts = line.split(","); // Assuming format: "code,name"
-                if (parts.length == 2) {
-                    String code = parts[0].trim();
-                    String name = parts[1].trim();
-                    languageCodeToNameMap.put(code, name);
-                    languageNameToCodeMap.put(name, code);
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
                 }
+                String country = line.substring(0, line.length() - 3).trim();
+                String languageCode = line.substring(line.length() - 3).trim();
+                codeToNameMap.put(languageCode, country);
+                nameToCodeMap.put(country, languageCode);
             }
-        } catch (IOException | URISyntaxException ex) {
+
+        }
+        catch (IOException | URISyntaxException ex) {
             throw new RuntimeException(ex);
         }
 
@@ -57,7 +60,7 @@ public class LanguageCodeConverter {
      * @return the name of the language corresponding to the code
      */
     public String fromLanguageCode(String code) {
-        return languageCodeToNameMap.getOrDefault(code, "Unknown language code");
+        return codeToNameMap.get(code);
     }
 
     /**
@@ -66,7 +69,7 @@ public class LanguageCodeConverter {
      * @return the 2-letter code of the language
      */
     public String fromLanguage(String language) {
-        return languageNameToCodeMap.getOrDefault(language, "Unknown language name");
+        return nameToCodeMap.get(language);
     }
 
     /**
@@ -74,6 +77,6 @@ public class LanguageCodeConverter {
      * @return how many languages are included in this code converter.
      */
     public int getNumLanguages() {
-        return languageCodeToNameMap.size();
+        return codeToNameMap.size();
     }
 }

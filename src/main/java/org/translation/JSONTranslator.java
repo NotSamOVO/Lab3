@@ -18,8 +18,8 @@ import org.json.JSONObject;
  */
 public class JSONTranslator implements Translator {
 
-    private final Map<String, Map<String, String>> translations;
-    private final List<String> countries;
+    private final Map<String, List<String>> countryLanguages = new HashMap<>();
+    private final Map<String, Map<String, String>> translations = new HashMap<>();
 
     /**
      * Constructs a JSONTranslator using data from the sample.json resources file.
@@ -34,49 +34,52 @@ public class JSONTranslator implements Translator {
      * @throws RuntimeException if the resource file can't be loaded properly
      */
     public JSONTranslator(String filename) {
-        translations = new HashMap<>();
-        countries = new ArrayList<>();
-
+        // read the file to get the data to populate things...
         try {
+
             String jsonString = Files.readString(Paths.get(getClass().getClassLoader().getResource(filename).toURI()));
+
             JSONArray jsonArray = new JSONArray(jsonString);
 
             for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject countryObject = jsonArray.getJSONObject(i);
-                String countryCode = countryObject.getString("countryCode");
-                countries.add(countryCode);
+                JSONObject countryData = jsonArray.getJSONObject(i);
+                String alpha3 = countryData.getString("alpha3");
 
-                Map<String, String> languageMap = new HashMap<>();
-                JSONObject translationsObject = countryObject.getJSONObject("translations");
-
-                for (String languageCode : translationsObject.keySet()) {
-                    String translation = translationsObject.getString(languageCode);
-                    languageMap.put(languageCode, translation);
+                // Populate translations
+                Map<String, String> translationMap = new HashMap<>();
+                for (String key : countryData.keySet()) {
+                    if (!key.equals("id") && !key.equals("alpha2") && !key.equals("alpha3")) {
+                        translationMap.put(key, countryData.getString(key));
+                    }
                 }
-                translations.put(countryCode, languageMap);
+                translations.put(alpha3, translationMap);
             }
-        } catch (IOException | URISyntaxException ex) {
+
+        }
+        catch (IOException | URISyntaxException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     @Override
     public List<String> getCountryLanguages(String country) {
-        if (translations.containsKey(country)) {
-            return new ArrayList<>(translations.get(country).keySet()); // Return mutable copy of language codes
+        Map<String, String> languageTranslations = translations.get(country);
+        if (languageTranslations != null) {
+            return new ArrayList<>(languageTranslations.keySet());
         }
         return new ArrayList<>();
     }
 
     @Override
     public List<String> getCountries() {
-        return new ArrayList<>(countries);
+        return new ArrayList<>(translations.keySet());
     }
 
     @Override
     public String translate(String country, String language) {
-        if (translations.containsKey(country) && translations.get(country).containsKey(language)) {
-            return translations.get(country).get(language);
+        Map<String, String> languageTranslations = translations.get(country);
+        if (languageTranslations != null) {
+            return languageTranslations.get(language);
         }
         return null;
     }

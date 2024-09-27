@@ -19,8 +19,10 @@ public class JSONTranslationExample {
     // Note: CheckStyle is configured so that we are allowed to omit javadoc for constructors
     public JSONTranslationExample() {
         try {
-            String jsonString = Files.readString(Paths.get(getClass()
-                    .getClassLoader().getResource("sample.json").toURI()));
+            // this next line of code reads in a file from the resources folder as a String,
+            // which we then create a new JSONArray object from.
+            String jsonString = Files.readString(Paths.get(getClass().getClassLoader()
+                    .getResource("sample.json").toURI()));
             this.jsonArray = new JSONArray(jsonString);
         }
         catch (IOException | URISyntaxException ex) {
@@ -47,7 +49,7 @@ public class JSONTranslationExample {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject country = jsonArray.getJSONObject(i);
             if (country.getString("alpha3").equalsIgnoreCase(countryCode)) {
-                return country.getString(languageCode);
+                return country.optString(languageCode, "Country not found");
             }
         }
         return "Country not found";

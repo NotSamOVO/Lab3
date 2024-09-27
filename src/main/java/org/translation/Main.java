@@ -1,6 +1,6 @@
 package org.translation;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,8 +14,7 @@ import java.util.Scanner;
  * - at any time, the user can type quit to quit the program<br/>
  */
 public class Main {
-
-    /**
+    private static final String QUIT_COMMAND = "quit";    /**
      * This is the main entry point of our Translation System!<br/>
      * A class implementing the Translator interface is created and passed into a call to runProgram.
      * @param args not used by the program
@@ -36,17 +35,18 @@ public class Main {
     public static void runProgram(Translator translator) {
         while (true) {
             String country = promptForCountry(translator);
-            if ("quit".equals(country)) {
+            if (QUIT_COMMAND.equalsIgnoreCase(country)) {
                 break;
             }
             String language = promptForLanguage(translator, country);
-            if ("quit".equals(language)) {
+            if (QUIT_COMMAND.equalsIgnoreCase(language)) {
                 break;
             }
             System.out.println(country + " in " + language + " is " + translator.translate(country, language));
             System.out.println("Press enter to continue or type 'quit' to exit.");
-            Scanner s = new Scanner(System.in);
-            if ("quit".equals(s.nextLine())) {
+            Scanner scanner = new Scanner(System.in);
+            String textTyped = scanner.nextLine();
+            if (QUIT_COMMAND.equalsIgnoreCase(textTyped)) {
                 break;
             }
         }
@@ -55,21 +55,21 @@ public class Main {
     // Note: CheckStyle is configured so that we don't need javadoc for private methods
     private static String promptForCountry(Translator translator) {
         List<String> countries = translator.getCountries();
-        List<String> sortedCountries = new ArrayList<>(countries);
-        for (int i = 0; i < sortedCountries.size() - 1; i++) {
-            for (int j = 0; j < sortedCountries.size() - i - 1; j++) {
-                if (sortedCountries.get(j).compareTo(sortedCountries.get(j + 1)) > 0) {
-                    String temp = sortedCountries.get(j);
-                    sortedCountries.set(j, sortedCountries.get(j + 1));
-                    sortedCountries.set(j + 1, temp);
-                }
+        for (int i = 0; i < countries.size(); i++) {
+            String countryCode = countries.get(i);
+            String countryName = translator.translate(countryCode, "en");
+            if (countryName != null) {
+                countries.set(i, countryName);
             }
         }
-        for (String country : sortedCountries) {
+        Collections.sort(countries, String.CASE_INSENSITIVE_ORDER);
+
+        for (String country : countries) {
             System.out.println(country);
         }
 
-        System.out.println("Select a country from above:");
+        System.out.println("select a country from above:");
+
         Scanner s = new Scanner(System.in);
         return s.nextLine();
 
@@ -77,23 +77,23 @@ public class Main {
 
     // Note: CheckStyle is configured so that we don't need javadoc for private methods
     private static String promptForLanguage(Translator translator, String country) {
-
         List<String> languages = translator.getCountryLanguages(country);
-        List<String> sortedLanguages = new ArrayList<>(languages);
-        for (int i = 0; i < sortedLanguages.size() - 1; i++) {
-            for (int j = 0; j < sortedLanguages.size() - i - 1; j++) {
-                if (sortedLanguages.get(j).compareTo(sortedLanguages.get(j + 1)) > 0) {
-                    String temp = sortedLanguages.get(j);
-                    sortedLanguages.set(j, sortedLanguages.get(j + 1));
-                    sortedLanguages.set(j + 1, temp);
-                }
+        for (int i = 0; i < languages.size(); i++) {
+            String languageCode = languages.get(i);
+            String languageName = translator.translate(languageCode, "en");
+            if (languageName != null) {
+                languages.set(i, languageName);
             }
         }
-        for (String language : sortedLanguages) {
+
+        Collections.sort(languages, String.CASE_INSENSITIVE_ORDER);
+
+        for (String language : languages) {
             System.out.println(language);
         }
 
-        System.out.println("Select a language from above:");
+        System.out.println("select a language from above:");
+
         Scanner s = new Scanner(System.in);
         return s.nextLine();
     }
